@@ -2,7 +2,7 @@ import numpy as np
 
 
 class HierarchicalSigmaDeltaMotionDetector:
-    def __init__(self, width, height, N=4, Vmin=2, Vmax=254):
+    def __init__(self, width, height, N=4, Vmin=10, Vmax=240):
         self.width = width
         self.height = height
         self.N = N
@@ -39,7 +39,7 @@ def process_video(video_path, detector,image_seuil=None):
     import cv2
 
     cap = cv2.VideoCapture(video_path)
-
+    i = 1
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -52,17 +52,20 @@ def process_video(video_path, detector,image_seuil=None):
             
         motion_mask = detector.update(gray)
 
+        if i == 32:
+            cv2.imwrite(f"./mu_sigma/sigmadelta_32.png",motion_mask.astype(np.uint8))
+
         cv2.imshow("Motion Detection", motion_mask)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+        i+=1
 
     cap.release()
     cv2.destroyAllWindows()
 
 
-# Example usage
 if __name__ == "__main__":
     video_path = "video.avi"
     width, height = 384, 288  # Adjust to your video's dimensions
-    detector = HierarchicalSigmaDeltaMotionDetector(width, height)
+    detector = HierarchicalSigmaDeltaMotionDetector(width, height, N=20)
     process_video(video_path, detector)

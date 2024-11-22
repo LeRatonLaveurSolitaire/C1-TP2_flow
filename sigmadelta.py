@@ -46,6 +46,7 @@ def process_video(video_path, detector):
         motion_mask = detector.update(gray)
 
         cv2.imshow("Motion Detection", motion_mask)
+        cv2.imshow("Original", gray)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
@@ -53,9 +54,8 @@ def process_video(video_path, detector):
     cv2.destroyAllWindows()
 
 
-# Example usage
 if __name__ == "__main__":
     video_path = "video.avi"
     width, height = 384, 288  # Adjust to your video's dimensions
-    detector = SigmaDeltaMotionDetector(width, height)
+    detector = SigmaDeltaMotionDetector(width, height, N =2)
     process_video(video_path, detector)
