@@ -5,7 +5,6 @@ import os
 
 def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
     # Lpath est une liste de N chemins d'accès vers des images
-    # On suppose que toutes les images ont la même taille
     N = len(Lpath)
     Limages=[]
     for i in range(N):
@@ -31,9 +30,11 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
     img_ecart_type = ecart_type.astype(np.uint8)
     Lx = np.arange(256)  # Valeurs de 0 à 255
     Ly, _ = np.histogram(img_ecart_type, bins=256, range=(0, 256))
+    seuil=Lx[np.argmin(Ly[:50])]
 
     # Tracer l'histogramme
-    plt.plot(Lx, Ly, label="Histogramme des niveaux de gris")
+    plt.plot(Lx, Ly,'b', label="Histogramme des niveaux de gris")
+    plt.plot(seuil,Ly[seuil],'ro',label="Seuil")
     plt.xlabel("Niveaux de gris")
     plt.ylabel("Fréquence")
     plt.title("Distribution des niveaux de gris")
@@ -46,11 +47,30 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
         cv.imshow("Ecart type", ecart_type.astype(np.uint8))
         cv.waitKey(0)
 
+    image_seuillee = np.zeros((h, w), dtype=np.uint8)
+    for i in range(h):
+        for j in range(w):
+            if ecart_type[i, j] > seuil:
+                image_seuillee[i, j] = 255
+            else:
+                image_seuillee[i, j] = 0
+    if affichage:
+        cv.imshow("Image seuillée", image_seuillee)
+        cv.waitKey(0)
+    cv.imwrite("image_seuillee_{}.png".format(N), image_seuillee)
+
 
 
 if __name__ == "__main__":
-    # lecture du dossier images
-    Lpath=sorted(os.listdir("images"))
-    Lpath=["images/"+path for path in Lpath]
-    print(Lpath)
-    calcul_moyenne_ecart_type_N_images(Lpath[:])
+    # lecture du dossier images et selection des pixels
+    # Lpath=sorted(os.listdir("images"))
+    # Lpath=["images/"+path for path in Lpath]
+    # print(Lpath)
+    # calcul_moyenne_ecart_type_N_images(Lpath[:])
+
+    from hierarchicalsigmadelta import *
+    image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
+    video_path = "video.avi"
+    width, height = 384, 288  # Adjust to your video's dimensions
+    detector = HierarchicalSigmaDeltaMotionDetector(width, height)
+    process_video(video_path, detector,image_seuil)

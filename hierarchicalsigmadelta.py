@@ -35,7 +35,7 @@ class HierarchicalSigmaDeltaMotionDetector:
         return self.E * 255
 
 
-def process_video(video_path, detector):
+def process_video(video_path, detector,image_seuil=None):
     import cv2
 
     cap = cv2.VideoCapture(video_path)
@@ -44,8 +44,12 @@ def process_video(video_path, detector):
         ret, frame = cap.read()
         if not ret:
             break
-
+        
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Seuillage
+        if image_seuil is not None:
+            gray = gray * (image_seuil // 255)
+            
         motion_mask = detector.update(gray)
 
         cv2.imshow("Motion Detection", motion_mask)
