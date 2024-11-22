@@ -2,6 +2,9 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from flowToColor import *
+from hierarchicalsigmadelta import *
+
 
 def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
     # Lpath est une liste de N chemins d'accès vers des images
@@ -60,6 +63,48 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
     cv.imwrite("image_seuillee_{}.png".format(N), image_seuillee)
 
 
+def horn_schunck(Lpath_images, alpha=0, n_iter=20):
+    # Initialiser les champs u et v
+    img0=cv.imread(Lpath_images[0], cv.COLOR_BGR2GRAY)
+    # cv.imshow("image",img0)
+    h, w = img0.shape
+    
+    u = np.zeros((h, w))
+    v = np.zeros((h, w))
+    
+    for t in range(len(Lpath_images) - 1):
+        print(f"Processing frames {t} and {t+1}...")
+        img1=cv.imread(Lpath_images[t], cv.COLOR_BGR2GRAY)
+        img2=cv.imread(Lpath_images[t+1], cv.COLOR_BGR2GRAY)
+        # img1 = gaussian_filter(images[t], sigma=1)
+        # img2 = gaussian_filter(images[t+1], sigma=1)
+
+        # Calcul des dérivées
+        Ex = cv.Sobel(img1, cv.CV_64F, 1, 0, ksize=5) + cv.Sobel(img2, cv.CV_64F, 1, 0, ksize=5)
+        Ey = cv.Sobel(img1, cv.CV_64F, 0, 1, ksize=5) + cv.Sobel(img2, cv.CV_64F, 0, 1, ksize=5)
+        Et = img2 - img1
+
+        # Iterative solution
+        for _ in range(n_iter):
+            # Calcul des Laplaciens
+            u_avg = cv.blur(u, (3, 3))
+            v_avg = cv.blur(v, (3, 3))
+
+            # Mise à jour des champs de flot
+            num = (Ex * u_avg + Ey * v_avg + Et)
+            denom = alpha**2 + Ex**2 + Ey**2
+            u = u_avg - (Ex * num) / denom
+            v = v_avg - (Ey * num) / denom
+    
+    img = flowToColor(u, v)
+    cv.imwrite("flot_optique.png", img)
+    cv.imshow("Flot optique", img)
+    cv.waitKey(5000)
+        
+    return u, v
+
+
+
 
 if __name__ == "__main__":
     # lecture du dossier images et selection des pixels
@@ -68,9 +113,23 @@ if __name__ == "__main__":
     # print(Lpath)
     # calcul_moyenne_ecart_type_N_images(Lpath[:])
 
-    from hierarchicalsigmadelta import *
-    image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
-    video_path = "video.avi"
-    width, height = 384, 288  # Adjust to your video's dimensions
-    detector = HierarchicalSigmaDeltaMotionDetector(width, height)
-    process_video(video_path, detector,image_seuil)
+    # from hierarchicalsigmadelta import *
+    # image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
+    # video_path = "video.avi"
+    # width, height = 384, 288  # Adjust to your video's dimensions
+    # detector = HierarchicalSigmaDeltaMotionDetector(width, height)
+    # process_video(video_path, detector,image_seuil)
+
+    # image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
+    # Lpath=sorted(os.listdir("images"))
+    # for img_path in Lpath:
+    #     print(img_path)
+    #     img = cv.imread("images/"+img_path, cv.IMREAD_GRAYSCALE)
+    #     img = img * (image_seuil // 255)
+    #     cv.imwrite("images_seuillees/"+img_path, img)
+
+    Lpath=sorted(os.listdir("images_seuillees"))
+    Lpath=["images_seuillees/"+path for path in Lpath]
+    horn_schunck(Lpath[:], alpha=0.1, n_iter=20)
+
+    
