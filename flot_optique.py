@@ -25,6 +25,9 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
             moyenne[i, j] = np.mean(pixel)
             ecart_type[i, j] = np.std(pixel)
 
+    if not(affichage):
+        return moyenne, ecart_type
+
     
     cv.imwrite("moyenne_{}.png".format(N), moyenne.astype(np.uint8))
     cv.imwrite("ecart_type_{}.png".format(N), ecart_type.astype(np.uint8))
@@ -45,22 +48,22 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
     plt.legend()
     plt.savefig("histogramme_ecart_type_{}.png".format(N))
     plt.show(block=False)
-    if affichage:
-        cv.imshow("Moyenne", moyenne.astype(np.uint8))
-        cv.imshow("Ecart type", ecart_type.astype(np.uint8))
-        cv.waitKey(0)
+    cv.imshow("Moyenne", moyenne.astype(np.uint8))
+    cv.imshow("Ecart type", ecart_type.astype(np.uint8))
+    cv.waitKey(0)
 
-    image_seuillee = np.zeros((h, w), dtype=np.uint8)
-    for i in range(h):
-        for j in range(w):
-            if ecart_type[i, j] > seuil:
-                image_seuillee[i, j] = 255
-            else:
-                image_seuillee[i, j] = 0
-    if affichage:
-        cv.imshow("Image seuillée", image_seuillee)
-        cv.waitKey(0)
-    cv.imwrite("image_seuillee_{}.png".format(N), image_seuillee)
+    return moyenne, ecart_type
+    # image_seuillee = np.zeros((h, w), dtype=np.uint8)
+    # for i in range(h):
+    #     for j in range(w):
+    #         if ecart_type[i, j] > seuil:
+    #             image_seuillee[i, j] = 255
+    #         else:
+    #             image_seuillee[i, j] = 0
+    # if affichage:
+    #     cv.imshow("Image seuillée", image_seuillee)
+    #     cv.waitKey(0)
+    # cv.imwrite("image_seuillee_{}.png".format(N), image_seuillee)
 
 
 def horn_schunck(Lpath_images, alpha=0, n_iter=20):
@@ -103,15 +106,38 @@ def horn_schunck(Lpath_images, alpha=0, n_iter=20):
         
     return u, v
 
+def creationDeLImageSeuil(image_path,image_moyenne,image_ecart_type):
+    image = cv.imread(image_path, cv.IMREAD_GRAYSCALE)
+    alpha = 1 # A ajuster
+    h, w = image.shape
+    image_seuil = np.zeros((h, w), dtype=np.uint8)
+    for i in range(h):
+        for j in range(w):
+            if image_moyenne[i,j]+alpha*image_ecart_type[i,j]>image[i,j]>image_moyenne[i,j]-alpha*image_ecart_type[i,j]:
+                image_seuil[i,j]=255
+            else:
+                image_seuil[i,j]=0
+    print("image_seuillee/seuil_{}".format(image_path.split('/')[1]))
+    print(cv.imwrite("image_seuillee/seuil_{}".format(image_path.split('/')[1]), image_seuil))
+    return image_seuil
+
 
 
 
 if __name__ == "__main__":
     # lecture du dossier images et selection des pixels
-    # Lpath=sorted(os.listdir("images"))
-    # Lpath=["images/"+path for path in Lpath]
-    # print(Lpath)
-    # calcul_moyenne_ecart_type_N_images(Lpath[:])
+    Lpath=sorted(os.listdir("images"))
+    Lpath=["images/"+path for path in Lpath]
+    print(Lpath)
+
+
+    n=5 # nombre d'images 
+    for i in range(len(Lpath)):
+        print(i)
+        avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
+        creationDeLImageSeuil(Lpath[i],avg,sigma)
+
+
 
     # from hierarchicalsigmadelta import *
     # image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
@@ -128,8 +154,8 @@ if __name__ == "__main__":
     #     img = img * (image_seuil // 255)
     #     cv.imwrite("images_seuillees/"+img_path, img)
 
-    Lpath=sorted(os.listdir("images_seuillees"))
-    Lpath=["images_seuillees/"+path for path in Lpath]
-    horn_schunck(Lpath[:], alpha=0.1, n_iter=20)
+    # Lpath=sorted(os.listdir("images_seuillees"))
+    # Lpath=["images_seuillees/"+path for path in Lpath]
+    # horn_schunck(Lpath[:], alpha=0.1, n_iter=20)
 
     
