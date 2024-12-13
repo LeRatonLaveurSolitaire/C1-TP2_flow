@@ -68,17 +68,20 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
 
 def horn_schunck(Lpath_images, alpha=0, n_iter=20):
     # Initialiser les champs u et v
-    img0=cv.imread(Lpath_images[0], cv.COLOR_BGR2GRAY)
+    image0=cv.imread(Lpath_images[0])
+    img0=cv.cvtColor(image0, cv.COLOR_BGR2GRAY)
     # cv.imshow("image",img0)
+    # cv.waitKey(0)
     h, w = img0.shape
     
-    u = np.zeros((h, w))
-    v = np.zeros((h, w))
-    
     for t in range(len(Lpath_images) - 1):
+        u = np.zeros((h, w))
+        v = np.zeros((h, w))
         print(f"Processing frames {t} and {t+1}...")
-        img1=cv.imread(Lpath_images[t], cv.COLOR_BGR2GRAY)
-        img2=cv.imread(Lpath_images[t+1], cv.COLOR_BGR2GRAY)
+        image1=cv.imread(Lpath_images[t])
+        img1=cv.cvtColor(image1, cv.COLOR_BGR2GRAY)
+        image2=cv.imread(Lpath_images[0])
+        img2=cv.cvtColor(image2, cv.COLOR_BGR2GRAY)
         # img1 = gaussian_filter(images[t], sigma=1)
         # img2 = gaussian_filter(images[t+1], sigma=1)
 
@@ -100,8 +103,10 @@ def horn_schunck(Lpath_images, alpha=0, n_iter=20):
             v = v_avg - (Ey * num) / denom
     
         img = flowToColor(u, v)
-        cv.imwrite("flot_optique/{}.png".format(Lpath_images[t]), img)
-        cv.imshow("Flot optique", img)
+
+        print("flot_optique/{}".format(Lpath_images[t].split('/')[1]))
+        cv.imwrite("flot_optique/{}".format(Lpath_images[t].split('/')[1]), img)
+        # cv.imshow("Flot optique", img)
     cv.waitKey(5000)
         
     return u, v
@@ -117,7 +122,7 @@ def creationDeLImageSeuil(image_path,image_moyenne,image_ecart_type):
                 image_seuil[i,j]=255
             else:
                 image_seuil[i,j]=0
-    # print("image_apres_seuil/{}".format(image_path.split('/')[1]))
+    print("image_apres_seuil/{}".format(image_path.split('/')[1]))
     cv.imwrite("image_apres_seuil/{}".format(image_path.split('/')[1]), image_seuil)
     return image_seuil
 
@@ -126,13 +131,13 @@ def creationDeLImageSeuil(image_path,image_moyenne,image_ecart_type):
 
 if __name__ == "__main__":
     # lecture du dossier images et selection des pixels
-    Lpath=sorted(os.listdir("images"))
-    Lpath=["images/"+path for path in Lpath]
+    Lpath_brut=sorted(os.listdir("images"))
+    Lpath=["images/"+path for path in Lpath_brut]
     # print(Lpath)
 
 
-    n=2 # nombre d'images 
-    for i in range(len(Lpath)):
+    n=2# nombre d'images 
+    for i in range(len(Lpath[:40])):
         print(i)
         avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
         creationDeLImageSeuil(Lpath[i],avg,sigma)
@@ -154,8 +159,25 @@ if __name__ == "__main__":
     #     img = img * (image_seuil // 255)
     #     cv.imwrite("images_seuillees/"+img_path, img)
 
-    Lpath=sorted(os.listdir("image_apres_seuil"))
-    Lpath=["image_apres_seuil/"+path for path in Lpath]
-    horn_schunck(Lpath[:], alpha=0.1, n_iter=20)
+    Lpath=["image_apres_seuil/"+path for path in Lpath_brut[:40]]
+    horn_schunck(Lpath[:40], alpha=10, n_iter=100)
+    
+
+    # image flot optique faite
+    Lpath_flot=sorted(os.listdir("flot_optique"))
+    for image in Lpath_flot[:]:
+        print(image)
+        img=cv.imread("flot_optique/{}".format(image))
+        print("image_apres_seuil/{}".format(image))
+
+        img_seuil=cv.imread("image_apres_seuil/{}".format(image))
+        img_seuil.shape
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                if img_seuil[i,j,0]==0:
+                    img[i,j,0]=255
+                    img[i,j,1]=255
+                    img[i,j,2]=255
+        cv.imwrite("flot_apres_masquage/{}".format(image), img)
 
     
