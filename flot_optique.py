@@ -99,9 +99,9 @@ def horn_schunck(Lpath_images, alpha=0, n_iter=20):
             u = u_avg - (Ex * num) / denom
             v = v_avg - (Ey * num) / denom
     
-    img = flowToColor(u, v)
-    cv.imwrite("flot_optique.png", img)
-    cv.imshow("Flot optique", img)
+        img = flowToColor(u, v)
+        cv.imwrite("flot_optique/{}.png".format(Lpath_images[t]), img)
+        cv.imshow("Flot optique", img)
     cv.waitKey(5000)
         
     return u, v
@@ -113,12 +113,12 @@ def creationDeLImageSeuil(image_path,image_moyenne,image_ecart_type):
     image_seuil = np.zeros((h, w), dtype=np.uint8)
     for i in range(h):
         for j in range(w):
-            if image_moyenne[i,j]+alpha*image_ecart_type[i,j]>image[i,j]>image_moyenne[i,j]-alpha*image_ecart_type[i,j]:
+            if image_ecart_type[i,j]>15:
                 image_seuil[i,j]=255
             else:
                 image_seuil[i,j]=0
-    print("image_seuillee/seuil_{}".format(image_path.split('/')[1]))
-    print(cv.imwrite("image_seuillee/seuil_{}".format(image_path.split('/')[1]), image_seuil))
+    # print("image_apres_seuil/{}".format(image_path.split('/')[1]))
+    cv.imwrite("image_apres_seuil/{}".format(image_path.split('/')[1]), image_seuil)
     return image_seuil
 
 
@@ -128,10 +128,10 @@ if __name__ == "__main__":
     # lecture du dossier images et selection des pixels
     Lpath=sorted(os.listdir("images"))
     Lpath=["images/"+path for path in Lpath]
-    print(Lpath)
+    # print(Lpath)
 
 
-    n=5 # nombre d'images 
+    n=2 # nombre d'images 
     for i in range(len(Lpath)):
         print(i)
         avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
@@ -154,8 +154,8 @@ if __name__ == "__main__":
     #     img = img * (image_seuil // 255)
     #     cv.imwrite("images_seuillees/"+img_path, img)
 
-    # Lpath=sorted(os.listdir("images_seuillees"))
-    # Lpath=["images_seuillees/"+path for path in Lpath]
-    # horn_schunck(Lpath[:], alpha=0.1, n_iter=20)
+    Lpath=sorted(os.listdir("image_apres_seuil"))
+    Lpath=["image_apres_seuil/"+path for path in Lpath]
+    horn_schunck(Lpath[:], alpha=0.1, n_iter=20)
 
     
