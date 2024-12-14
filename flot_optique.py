@@ -13,7 +13,7 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
     for i in range(N):
         img = cv.imread(Lpath[i], cv.IMREAD_GRAYSCALE)  #ouverture en niveau de gris
         Limages.append(img)
-    
+        
     # Pour cahque pixel, on calcule la moyenne et l'écart type
     h, w = Limages[0].shape
     moyenne = np.zeros((h, w), dtype=np.float32)
@@ -24,7 +24,7 @@ def calcul_moyenne_ecart_type_N_images(Lpath,affichage=False):
             pixel = [image[i, j] for image in Limages]
             moyenne[i, j] = np.mean(pixel)
             ecart_type[i, j] = np.std(pixel)
-
+            
     if not(affichage):
         return moyenne, ecart_type
 
@@ -123,7 +123,9 @@ def creationDeLImageSeuil(image_path,image_moyenne,image_ecart_type):
             else:
                 image_seuil[i,j]=0
     print("image_apres_seuil/{}".format(image_path.split('/')[1]))
-    cv.imwrite("image_apres_seuil/{}".format(image_path.split('/')[1]), image_seuil)
+    print(cv.imwrite("image_apres_seuil/{}".format(image_path.split('/')[1]), image_seuil))
+    # cv.imshow("Image seuillee", image_seuil)
+    # cv.waitKey(0)
     return image_seuil
 
 
@@ -133,17 +135,22 @@ if __name__ == "__main__":
     # lecture du dossier images et selection des pixels
     Lpath_brut=sorted(os.listdir("images"))
     Lpath=["images/"+path for path in Lpath_brut]
+
+    # Lpath_brut=sorted(os.listdir("LAB_images"))
+    # Lpath=["LAB_images/"+path for path in Lpath_brut]
     # print(Lpath)
 
 
-    n=2# nombre d'images 
-    for i in range(len(Lpath[:40])):
-        print(i)
-        avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
-        creationDeLImageSeuil(Lpath[i],avg,sigma)
+    # n=2# nombre d'images 
+    # for i in range(len(Lpath[:40])):
+    #     print(i, Lpath[i],Lpath[max(0,i-n):min(len(Lpath),i+n)])
+    #     avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
+    #     # max de sigma
+    #     print("max de sigma",np.max(sigma))
+    #     creationDeLImageSeuil(Lpath[i],avg,sigma)
 
 
-
+    # assert False
     # from hierarchicalsigmadelta import *
     # image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
     # video_path = "video.avi"
@@ -159,25 +166,26 @@ if __name__ == "__main__":
     #     img = img * (image_seuil // 255)
     #     cv.imwrite("images_seuillees/"+img_path, img)
 
-    Lpath=["image_apres_seuil/"+path for path in Lpath_brut[:40]]
-    horn_schunck(Lpath[:40], alpha=10, n_iter=100)
+    # Lpath=["image_apres_seuil/"+path for path in Lpath_brut[:40]]
+
+    horn_schunck(Lpath[:40], alpha=1, n_iter=20)
     
 
     # image flot optique faite
-    Lpath_flot=sorted(os.listdir("flot_optique"))
-    for image in Lpath_flot[:]:
-        print(image)
-        img=cv.imread("flot_optique/{}".format(image))
-        print("image_apres_seuil/{}".format(image))
+    # Lpath_flot=sorted(os.listdir("flot_optique"))
+    # for image in Lpath_flot[:]:
+    #     print(image)
+    #     img=cv.imread("flot_optique/{}".format(image))
+    #     print("image_apres_seuil/{}".format(image))
 
-        img_seuil=cv.imread("image_apres_seuil/{}".format(image))
-        img_seuil.shape
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
-                if img_seuil[i,j,0]==0:
-                    img[i,j,0]=255
-                    img[i,j,1]=255
-                    img[i,j,2]=255
-        cv.imwrite("flot_apres_masquage/{}".format(image), img)
+    #     img_seuil=cv.imread("image_apres_seuil/{}".format(image))
+    #     img_seuil.shape
+    #     for i in range(img.shape[0]):
+    #         for j in range(img.shape[1]):
+    #             if img_seuil[i,j,0]==0:
+    #                 img[i,j,0]=255
+    #                 img[i,j,1]=255
+    #                 img[i,j,2]=255
+    #     cv.imwrite("flot_apres_masquage/{}".format(image), img)
 
     
