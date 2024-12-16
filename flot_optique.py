@@ -141,16 +141,15 @@ if __name__ == "__main__":
     # print(Lpath)
 
 
-    # n=2# nombre d'images 
-    # for i in range(len(Lpath[:40])):
-    #     print(i, Lpath[i],Lpath[max(0,i-n):min(len(Lpath),i+n)])
-    #     avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
-    #     # max de sigma
-    #     print("max de sigma",np.max(sigma))
-    #     creationDeLImageSeuil(Lpath[i],avg,sigma)
+    n=2# nombre d'images 
+    for i in range(len(Lpath[:40])):
+        print(i, Lpath[i],Lpath[max(0,i-n):min(len(Lpath),i+n)])
+        avg, sigma=calcul_moyenne_ecart_type_N_images(Lpath[max(0,i-n):min(len(Lpath),i+n)],affichage=False)
+        # # max de sigma
+        # print("max de sigma",np.max(sigma))
+        # creationDeLImageSeuil(Lpath[i],avg,sigma)
 
 
-    # assert False
     # from hierarchicalsigmadelta import *
     # image_seuil=cv.imread("image_seuillee_614.png", cv.IMREAD_GRAYSCALE)
     # video_path = "video.avi"
@@ -172,20 +171,20 @@ if __name__ == "__main__":
     
 
     # image flot optique faite
-    # Lpath_flot=sorted(os.listdir("flot_optique"))
-    # for image in Lpath_flot[:]:
-    #     print(image)
-    #     img=cv.imread("flot_optique/{}".format(image))
-    #     print("image_apres_seuil/{}".format(image))
+    Lpath_flot=sorted(os.listdir("flot_optique"))
+    for image in Lpath_flot[:]:
+        print(image)
+        img=cv.imread("flot_optique/{}".format(image))
+        print("image_apres_seuil/{}".format(image))
 
-    #     img_seuil=cv.imread("image_apres_seuil/{}".format(image))
-    #     img_seuil.shape
-    #     for i in range(img.shape[0]):
-    #         for j in range(img.shape[1]):
-    #             if img_seuil[i,j,0]==0:
-    #                 img[i,j,0]=255
-    #                 img[i,j,1]=255
-    #                 img[i,j,2]=255
-    #     cv.imwrite("flot_apres_masquage/{}".format(image), img)
+        img_seuil=cv.imread("image_apres_seuil/{}".format(image))
+        img_seuil.shape
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                if img_seuil[i,j,0]==0:
+                    img[i,j,0]=255
+                    img[i,j,1]=255
+                    img[i,j,2]=255
+        cv.imwrite("flot_apres_masquage/{}".format(image), img)
 
     
